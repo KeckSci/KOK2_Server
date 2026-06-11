@@ -1,0 +1,2073 @@
+# =============================================================================
+# STAGE74 NORMAL CLIENT QUIT
+#
+# Confirmed client request:
+#   type=1, opcode=0x8003, payload=b"quit\x00"
+#
+# Behavior:
+#   handler requests closure of the current game connection
+#   server exits its receive loop, calls socket.shutdown(), and closes socket
+#   no unverified server reply packet is sent
+# =============================================================================
+
+# =============================================================================
+# STAGE73 RELOAD CHARACTER ON GAME LOGIN
+#
+# Every client 0x9007 game-server login reloads the latest character row from
+# kok2.db before the existing 0x0002 -> 0x0005 response sequence.
+# =============================================================================
+
+# =============================================================================
+# STAGE72 MOVEMENT PERSISTENCE
+#
+# Added:
+#   client 0x8005 movement parsing
+#   SQLite persistence of map position and the confirmed uint16 movement field
+#
+# No movement response or broadcast is sent in this stage.
+# =============================================================================
+
+# =============================================================================
+# STAGE71 LOGIN HANDLER MIGRATION
+#
+# Real responses owned by login_handlers.py:
+#   client 0x9005 -> server 0x7002 existing-role response
+#   client 0x9002 -> server 0x7003 ChangeConnect response
+#
+# All other response logic remains in server_legacy.py.
+# =============================================================================
+
+# =============================================================================
+# STAGE70 LOGIN HANDLER MIGRATION
+#
+# Real response migrated:
+#   client 0x9005 -> server 0x7002 existing-role response
+#
+# All other response logic remains in server_legacy.py.
+# =============================================================================
+
+# =============================================================================
+# STAGE69 OBSERVER DISPATCHER
+#
+# The dispatcher and handler modules identify packets without changing any
+# existing response behavior. Legacy response branches remain authoritative.
+# =============================================================================
+
+# =============================================================================
+# STAGE68 DATABASE-DRIVEN LEGACY SERVER
+#
+# The confirmed protocol flow is unchanged.
+# Role list, map, spawn coordinates and player appearance are loaded from kok2.db.
+# =============================================================================
+
+# =============================================================================
+# STAGE67 LEGACY SERVER WITH EXTERNAL CONFIG, CRYPTO AND PROTOCOL MODULES
+#
+# Protocol behavior is unchanged. Common frame handling now lives in protocol.py.
+# =============================================================================
+
+# =============================================================================
+# STAGE66 LEGACY SERVER WITH EXTERNAL CONFIG AND CRYPTO MODULE
+#
+# Protocol behavior is unchanged. Crypto implementation now lives in crypto.py.
+# =============================================================================
+
+# =============================================================================
+# STAGE66 LEGACY SERVER WITH EXTERNAL CONFIG
+#
+# Protocol logic is unchanged from the confirmed working legacy server.
+# Editable paths, ports, character appearance, map and spawn coordinates are
+# loaded from config.py.
+# =============================================================================
+
+# =============================================================================
+# STAGE65 EASY MAP AND SPAWN CONFIGURATION
+#
+# Edit only:
+#   GAME_MAP_ID
+#   GAME_MAP_NAME
+#   GAME_SPAWN_X
+#   GAME_SPAWN_Y
+#
+# The packed field14 value is generated automatically.
+# Confirmed successful base map:
+#   GAME_MAP_ID = 10100
+#   GAME_MAP_NAME = "TW10100"
+# =============================================================================
+
+# =============================================================================
+# STAGE64 SUCCESSFUL MAP 10100 WITH SPAWN GRID (10, 10)
+#
+# Confirmed:
+#   field00 = 10100 loads the real scene resource:
+#       \map\10100.Sce
+#
+# This stage keeps the successful game-server sequence:
+#   0x0002 -> 0x0005
+#
+# Spawn position:
+#   field14 high 16 bits = grid X = 10
+#   field14 low  16 bits = grid Y = 10
+#   field14 = 0x000A000A
+#
+# 0x0004 and 0x0007 remain disabled.
+# =============================================================================
+
+# =============================================================================
+# STAGE63 GAME MAP SCENE-ID TEST
+#
+# Confirmed client-side state-machine behavior:
+#   field00 is copied into DAT_00633238 and used to build:
+#       map\<field00>.Sce
+#
+# This stage therefore tests the known candidate combination:
+#   field00 = 100000
+#   map_name = "TW10100"
+#   field08 = 10100
+#
+# Send sequence remains the stable baseline:
+#   0x0002 -> 0x0005
+#
+# 0x0004 and 0x0007 remain disabled.
+# =============================================================================
+
+# =============================================================================
+# STAGE57 GAME MAP INIT 0x0002 + BEING 0x0005 ONLY
+#
+# Keeps the stable role-selection and 0x9002 -> 0x7003 ChangeConnect flow.
+# The first packet received on TCP 10100 is now decrypted and parsed.
+# =============================================================================
+
+# =============================================================================
+# STAGE50 ENTER GAME: 0x9002 -> 0x7003 CHANGECONNECT + 10100 CAPTURE
+#
+# Existing role-selection flow is unchanged and remains stable.
+#
+# New behavior:
+#   1. User selects role "test" and clicks Enter Game.
+#   2. Client sends opcode 0x9002 with payload "test\0".
+#   3. Server replies with opcode 0x7003:
+#        status       = 0
+#        ticket_len   = 1
+#        ticket       = 00
+#        connect_info = "127.0.0.1#10100\0"
+#   4. A dummy listener on TCP 10100 captures the client's first game-server packet.
+# =============================================================================
+
+# =============================================================================
+# STAGE49 ALL ROLE-INITIALIZATION PROBES ENABLED, 0x001C DISABLED
+#
+# Enabled:
+#   0x7003
+#   0x7004
+#   0x7006
+#   0x7008
+#
+# Disabled:
+#   0x001C after existing-role 0x7002
+#
+# The five related switches are grouped together immediately above
+# OPCODE_7002_ROLE_TOKEN_STRING for convenient manual testing.
+# =============================================================================
+
+# =============================================================================
+# STAGE48 EXISTING ROLE + ONLY 0x7006
+#
+# Stage47 with only 0x7004 still produced the same persistent black screen.
+#
+# Enabled:
+#   0x7006 only
+#
+# Disabled:
+#   0x7003
+#   0x7004
+#   0x7008
+#   0x001C
+# =============================================================================
+
+# =============================================================================
+# STAGE47 EXISTING ROLE + ONLY 0x7004
+#
+# Purpose:
+#   Stage46 reached a persistent black screen, which means removing every probe
+#   also removed at least one UI-transition packet.
+#
+# Enabled:
+#   0x7004 only
+#
+# Disabled:
+#   0x7003 (known ChangeConnect path)
+#   0x7006
+#   0x7008
+#   0x001C
+#
+# Existing-role token remains unchanged.
+# =============================================================================
+
+# =============================================================================
+# STAGE46 CLEAN EXISTING-ROLE TEST
+#
+# Sends the verified full-body role token through opcode 0x7002.
+#
+# Disabled:
+#   0x7003 probe
+#   0x7004 probe
+#   0x7006 probe
+#   0x7008 probe
+#   0x001C probe
+#
+# Retained:
+#   normal initial login/server-list flow
+#   opcode 0x0002 scene response
+#   opcode 0x0015 response to client 0x8015
+#   opcode 0x7002 existing-role response to client 0x9005
+#
+# Role token:
+#   test#1#1#256#1000#256#256#256#256#256#256#0#0#0#0#0#
+#   logout#1000#0#none#0
+# =============================================================================
+
+# =============================================================================
+# STAGE32 EXISTING-ROLE TOKEN TEST, 0x001C DISABLED
+#
+# Generated from the user's uploaded script.
+# Only functional change:
+#   ENABLE_OPCODE_001C_AFTER_EXISTING_ROLE = False
+#
+# Keep the current role token unchanged.
+# Purpose:
+#   Test whether the selected 0x7002 token itself fails, without 0x001C interfering.
+# =============================================================================
+
+# =============================================================================
+# STAGE29 AUTO-GENERATED
+# Source: kok2_login_server_stage28_existing_role_plus_001c_len38_probe.py
+#
+# Changes:
+# - existing-role 0x7002 token changed to:
+#   test#1#1000#1000#1#1#1#1#1#1#1#1#1#1#1#1#twn#1000#10100#TW10100#0
+# - 0x001C experimental len38 probe send lines disabled: 0
+# - stage28 verified crypto/protocol logic otherwise preserved.
+#
+# Generated by make_stage29_existing_role_no001c.py
+# =============================================================================
+
+import datetime
+import random
+import socket
+import threading
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional
+
+import config
+from database import Database
+from dispatcher import (
+    ConnectionControl,
+    GAME_DISPATCHER,
+    LOGIN_DISPATCHER,
+    PacketContext,
+)
+import game_handlers  # registers game handlers
+from game_handlers import (
+    GameHandlerRuntime,
+    configure_game_handlers,
+)
+import login_handlers  # registers login handlers
+from login_handlers import (
+    LoginHandlerRuntime,
+    configure_login_handlers,
+)
+
+from crypto import (
+    StatefulCryptoContext,
+    build_inverse_tables,
+    decode_initial_packet,
+    decode_stateful_packet,
+    decode_stateful_candidate,
+    encode_initial_packet,
+    encode_initial_packet_with_context,
+    encode_stateful_packet,
+    find_stateful_context_candidates,
+    load_crypto_table,
+    print_stateful_candidates,
+    verify_known_stateful_vector,
+)
+
+from protocol import (
+    build_type1_plain,
+    build_type4_plain,
+    c_string,
+    describe_plain_frame,
+    extract_plain_frames,
+)
+
+
+# ============================================================
+# 基本设置
+# ============================================================
+
+HOST = config.HOST
+PORT = config.LOGIN_PORT
+
+GKK2_PATH = config.GKK2_PATH
+
+# 已确认的加密表文件偏移
+TABLE_FILE_OFFSET = 0x1F6F40
+TABLE_SIZE = 0x10000
+
+
+# ============================================================
+# 服务器列表响应
+# ============================================================
+
+SERVER_LIST_OPCODE = 0x7009
+
+SERVER_FIELD1 = 1
+SERVER_NAME = config.SERVER_NAME
+SERVER_FIELD3 = 1
+
+# 收到服务器选择请求后，发送 opcode 0x0002 的空 payload 诊断包。
+# 0x0002 已确认对应 004C25F0，但字段数据暂时留空，
+# 用于在 004BF980 中观察客户端反序列化器首先期待的字段。
+ENABLE_UNKNOWN_OPCODE_PROBE = True
+PROBE_OPCODE = 0x0002
+
+REDIRECT_HOST = "TW10100"
+REDIRECT_FIELD_00 = 100000
+REDIRECT_FIELD_08 = 10100
+REDIRECT_FIELD_0A = 0
+REDIRECT_FIELD_0C = 0
+REDIRECT_FIELD_10 = 0
+REDIRECT_FIELD_14 = 0
+
+
+# opcode 0x0015 测试响应字段
+# 字段格式已确认：C string, C string, uint32, uint16, uint8, uint32
+RESPONSE_0015_STRING1 = ""
+RESPONSE_0015_STRING2 = ""
+RESPONSE_0015_UINT32_A = 0
+RESPONSE_0015_UINT16 = 0
+RESPONSE_0015_UINT8 = 0
+RESPONSE_0015_UINT32_B = 0
+DUMMY_GAME_PORTS = (config.GAME_PORT,)
+
+
+# ============================================================
+# opcode 0x7003 测试响应
+# ============================================================
+
+# x32dbg 实测结果：
+#   opcode 0x7003 -> local index 0x48
+#   stage14 的 12-byte data 能反序列化，但在 004C0F9A 时 [ESP+10] = 4，
+#   说明 type4 payload 还剩 4 字节被继续当作下一条记录解析。
+#
+# stage18 改为 8-byte data：
+#   type02 = uint16
+#   type09 = uint32 length + raw bytes
+#   末尾补 1 字节，使总 data length = 8。
+#
+# 目标：在 004C0F9A, [ebp]==0x48 命中时，[ESP+10] 应为 0。
+OPCODE_7003_PROBE_DELAY_SECONDS = 0.5
+OPCODE_7003_UINT16 = 1
+OPCODE_7003_TYPE09_BYTES = b"\x00"
+OPCODE_7003_TAIL_BYTE = b"\x00"
+
+# ============================================================
+# opcode 0x7004 测试响应
+# ============================================================
+
+# x32dbg 表项确认：
+#   opcode 0x7004
+#   handler     = 004C24D0
+#   field table = 0067D298
+#   struct size = 0x02
+#   record desc = 0063454C
+#
+# 字段最小格式：
+#   type02 = uint16
+#
+# type4 明文应为：
+#   00 04 00 00 00 04 70 04 00 01
+OPCODE_7004_PROBE_DELAY_SECONDS = 0.20
+OPCODE_7004_UINT16 = 1
+
+
+# ============================================================
+# opcode 0x7006 测试响应
+# ============================================================
+
+# x32dbg 表项确认：
+#   opcode 0x7006
+#   handler     = 004C3A10
+#   field table = 0067D294
+#   struct size = 0x01
+#   record desc = 00634564
+#
+# 字段最小格式：
+#   type03 = uint8
+#
+# 它紧跟 0x7003/0x7004，像登录阶段状态切换包。
+OPCODE_7006_PROBE_DELAY_SECONDS = 0.20
+OPCODE_7006_UINT8 = 1
+
+
+# ============================================================
+# opcode 0x7008 测试响应
+# ============================================================
+
+# x32dbg 表项确认：
+#   opcode 0x7008
+#   handler     = 004C2500
+#   field table = 0067D288
+#   struct size = 0x0C
+#   record desc = 0063457C
+#
+# 字段最小格式：
+#   type02 = uint16
+#   type04 = uint32 length + raw bytes/string，size 必须 > 0
+#   type04 = uint32 length + raw bytes/string，size 必须 > 0
+#
+# 最小安全 data：
+#   uint16 = 1
+#   type04 length = 1, data = 00
+#   type04 length = 1, data = 00
+OPCODE_7008_PROBE_DELAY_SECONDS = 0.20
+OPCODE_7008_UINT16 = 1
+OPCODE_7008_STRING_A = ""
+OPCODE_7008_STRING_B = ""
+
+
+# ============================================================
+# opcode 0x7002 测试响应，优先用于响应客户端 0x9005
+# ============================================================
+
+# 当前阶段推断：
+#   客户端 0x9005 payload 包含 1,2,3,4,"kk2","twn","ob","202"，
+#   很像版本/地区/资源配置请求。
+#
+# 静态表项候选：
+#   opcode 0x7002
+#   handler     = 004C37A0
+#   field table = 0067D2AC
+#   struct size = 0x08
+#
+# stage28：不再走客户端创建角色流程。
+# 登录阶段收到 0x9005 后，先告诉客户端该账号已有一个角色，
+# 然后追加一个0x001C len38 UI-state probe，测试读条 -> 角色选择 UI 状态切换。
+#
+# 0x7002 data 格式目前确认：
+#   uint16 = 1
+#   C string = role token string
+#
+# role token string 使用 # 分隔，004044A0 会按顺序解析为 pPlayerData 字段。
+# 这是当前 21-token 测试版，目标是替代创建角色流程，直接显示已有角色。
+ENABLE_OPCODE_7002_AFTER_9005 = True
+OPCODE_7002_DELAY_AFTER_9005_SECONDS = config.ROLE_LIST_DELAY_SECONDS
+OPCODE_7002_UINT16 = 1
+# =============================================================================
+# ROLE-SELECTION PROBE SWITCHES
+# Keep these together for quick testing.
+# =============================================================================
+ENABLE_OPCODE_7003_PROBE = True
+ENABLE_OPCODE_7004_PROBE = True
+ENABLE_OPCODE_7006_PROBE = True
+ENABLE_OPCODE_7008_PROBE = True
+ENABLE_OPCODE_001C_AFTER_EXISTING_ROLE = False
+# =============================================================================
+# ENTER-GAME / CHANGE-CONNECT SETTINGS
+# Client request:
+#   opcode 0x9002, payload = selected role name as a C string
+#
+# Server response:
+#   opcode 0x7003 with status, ticket and "host#port" connection information.
+# =============================================================================
+ENABLE_ENTER_GAME_CHANGE_CONNECT = True
+ENTER_GAME_CHANGE_CONNECT_DELAY_SECONDS = config.ENTER_GAME_REDIRECT_DELAY_SECONDS
+ENTER_GAME_STATUS_UINT16 = 0
+ENTER_GAME_TICKET_BYTES = b"\x00"
+ENTER_GAME_CONNECT_INFO = (
+    f"{config.ENTER_GAME_HOST}#{config.ENTER_GAME_PORT}"
+)
+# =============================================================================
+
+# =============================================================================
+
+OPCODE_7002_ROLE_TOKEN_STRING = ""
+
+# ============================================================
+# opcode 0x001C len38 UI-state probe
+# ============================================================
+
+# stage28：0x001C 表项已确认：
+#   opcode 0x001C -> index 0x19
+#   handler = 004C6D30
+#   struct size = 0x38
+# 因此这里发送 56 字节 data，而不是 stage28 的 16 字节最小 probe。
+OPCODE_001C_DELAY_AFTER_7002_SECONDS = 0.3
+OPCODE_001C_UI_STATE_PROBE_DATA = bytes(0x38)
+
+
+# ============================================================
+# 客户端后续包的连接状态
+# ============================================================
+
+# 这是你刚才在客户端连接上下文中观察到的：
+#
+# 0D6B6044:
+# BD 04 00 00 ...
+#
+# 即：
+# 通过已知服务器选择包穷举确认：
+# initial state = 0x48
+# table row    = 0x08
+#
+# 注意：该状态可能在新的游戏进程或新连接中变化。
+# 如果后续解密结果不正确，需要重新在 x32dbg 中查看
+# 004C1A70 调用时 [ESP+14] 指向的前两个字节。
+
+CLIENT_INITIAL_STATE = 0x48
+CLIENT_TABLE_ROW = 0x08
+
+# 是否尝试对客户端后续包使用状态式解密
+ENABLE_STATEFUL_FOLLOWUP_DECODE = True
+
+
+
+# ============================================================
+# STAGE55 GAME-SERVER 0x0005 BEING RECORD + 0x0007 ACTIVATE PROBE
+# ============================================================
+
+ENABLE_GAME_OPCODE_0002_0005_ONLY_PROBE = True
+GAME_OPCODE_0002 = 0x0002
+GAME_OPCODE_0005 = 0x0005
+GAME_OPCODE_0007 = 0x0007
+
+# Game-map initialization record confirmed by descriptor 0x006345F8:
+# uint32, C string, uint16, uint16, uint16, uint32, uint32.
+# =============================================================================
+# EASY MAP / SPAWN CONFIGURATION
+#
+# Usually you only need to edit the three values below.
+# =============================================================================
+
+# Runtime values are loaded from kok2.db in load_runtime_configuration().
+GAME_MAP_ID = 0
+GAME_MAP_NAME = ""
+
+GAME_SPAWN_X = 0
+GAME_SPAWN_Y = 0
+
+
+def pack_grid_position(x: int, y: int) -> int:
+    """Pack two unsigned 16-bit grid coordinates into one uint32."""
+    if not 0 <= x <= 0xFFFF:
+        raise ValueError(f"GAME_SPAWN_X must be between 0 and 65535, got {x}")
+    if not 0 <= y <= 0xFFFF:
+        raise ValueError(f"GAME_SPAWN_Y must be between 0 and 65535, got {y}")
+    return (x << 16) | y
+
+
+# Protocol fields derived from the readable settings above.
+GAME_OPCODE_0002_FIELD_00 = GAME_MAP_ID
+GAME_OPCODE_0002_MAP_NAME = GAME_MAP_NAME
+GAME_OPCODE_0002_FIELD_08 = 8
+GAME_OPCODE_0002_FIELD_0A = 0
+GAME_OPCODE_0002_FIELD_0C = 0
+GAME_OPCODE_0002_FIELD_10 = 0
+GAME_OPCODE_0002_FIELD_14 = pack_grid_position(GAME_SPAWN_X, GAME_SPAWN_Y)
+
+GAME_OPCODE_0007_PAYLOAD = b"test\x00"
+GAME_OPCODE_0002_TO_0005_DELAY_SECONDS = config.MAP_TO_PLAYER_DELAY_SECONDS
+GAME_OPCODE_0005_TO_0007_DELAY_SECONDS = 0.25
+GAME_POST_REPLY_RECV_TIMEOUT_SECONDS = None
+
+GAME_OPCODE_0005_NAME = ""
+GAME_OPCODE_0005_STRING1 = ""
+GAME_OPCODE_0005_STRING2 = ""
+GAME_OPCODE_0005_FIELD_0C = 0
+GAME_OPCODE_0005_FIELD_10 = 0
+GAME_OPCODE_0005_FIELD_14 = 0
+GAME_OPCODE_0005_FIELD_18 = 0
+GAME_OPCODE_0005_FIELD_1A = 0
+GAME_OPCODE_0005_FIELD_1C = 0
+GAME_OPCODE_0005_FIELD_20 = 0
+GAME_OPCODE_0005_ARRAY1: tuple[int, ...] = ()
+GAME_OPCODE_0005_FIELD_2C = 0
+GAME_OPCODE_0005_ARRAY2: tuple[int, ...] = (
+    0x00100001,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+)
+
+
+
+
+
+def build_game_opcode_0002_payload() -> bytes:
+    """Build one map-initialization record for game opcode 0x0002."""
+    return b"".join(
+        [
+            GAME_OPCODE_0002_FIELD_00.to_bytes(4, "big"),
+            c_string(GAME_OPCODE_0002_MAP_NAME),
+            GAME_OPCODE_0002_FIELD_08.to_bytes(2, "big"),
+            GAME_OPCODE_0002_FIELD_0A.to_bytes(2, "big"),
+            GAME_OPCODE_0002_FIELD_0C.to_bytes(2, "big"),
+            GAME_OPCODE_0002_FIELD_10.to_bytes(4, "big"),
+            GAME_OPCODE_0002_FIELD_14.to_bytes(4, "big"),
+        ]
+    )
+
+
+def build_game_opcode_0005_payload() -> bytes:
+    def u32_array(values: tuple[int, ...]) -> bytes:
+        return (
+            len(values).to_bytes(4, "big")
+            + b"".join(value.to_bytes(4, "big") for value in values)
+        )
+
+    payload = b"".join((
+        c_string(GAME_OPCODE_0005_NAME),
+        c_string(GAME_OPCODE_0005_STRING1),
+        c_string(GAME_OPCODE_0005_STRING2),
+        GAME_OPCODE_0005_FIELD_0C.to_bytes(1, "big"),
+        GAME_OPCODE_0005_FIELD_10.to_bytes(4, "big"),
+        GAME_OPCODE_0005_FIELD_14.to_bytes(4, "big"),
+        GAME_OPCODE_0005_FIELD_18.to_bytes(1, "big"),
+        GAME_OPCODE_0005_FIELD_1A.to_bytes(2, "big"),
+        GAME_OPCODE_0005_FIELD_1C.to_bytes(4, "big"),
+        GAME_OPCODE_0005_FIELD_20.to_bytes(1, "big"),
+        u32_array(GAME_OPCODE_0005_ARRAY1),
+        GAME_OPCODE_0005_FIELD_2C.to_bytes(1, "big"),
+        u32_array(GAME_OPCODE_0005_ARRAY2),
+    ))
+    return payload
+
+
+
+# ============================================================
+# Database-driven runtime configuration
+# ============================================================
+
+DATABASE = Database(config.DATABASE_PATH)
+RUNTIME_CHARACTER = None
+
+
+def build_role_token_from_character(character) -> str:
+    return (
+        f"{character['name']}#"
+        f"1#"
+        f"{character['gender']}#"
+        f"{character['body']}#"
+        f"{character['hair']}#"
+        f"{character['head']}#"
+        f"{character['hand_r']}#"
+        f"{character['hand_l']}#"
+        f"{character['pants']}#"
+        f"{character['foot_r']}#"
+        f"{character['foot_l']}#"
+        f"0#0#0#0#0#"
+        f"logout#1000#0#none#0"
+    )
+
+
+def load_runtime_configuration() -> None:
+    global RUNTIME_CHARACTER
+    global OPCODE_7002_ROLE_TOKEN_STRING
+    global GAME_MAP_ID
+    global GAME_MAP_NAME
+    global GAME_SPAWN_X
+    global GAME_SPAWN_Y
+    global GAME_OPCODE_0002_FIELD_00
+    global GAME_OPCODE_0002_MAP_NAME
+    global GAME_OPCODE_0002_FIELD_08
+    global GAME_OPCODE_0002_FIELD_14
+    global GAME_OPCODE_0005_NAME
+    global GAME_OPCODE_0005_ARRAY2
+
+    character = DATABASE.load_runtime_character(
+        account_username=config.DEFAULT_ACCOUNT_USERNAME,
+        character_name=config.DEFAULT_CHARACTER_NAME,
+    )
+
+    RUNTIME_CHARACTER = character
+
+    GAME_MAP_ID = int(character["map_id"])
+    GAME_MAP_NAME = str(character["terrain_name"])
+    GAME_SPAWN_X = int(character["position_x"])
+    GAME_SPAWN_Y = int(character["position_y"])
+
+    GAME_OPCODE_0002_FIELD_00 = GAME_MAP_ID
+    GAME_OPCODE_0002_MAP_NAME = GAME_MAP_NAME
+    GAME_OPCODE_0002_FIELD_08 = 8
+    GAME_OPCODE_0002_FIELD_14 = pack_grid_position(
+        GAME_SPAWN_X,
+        GAME_SPAWN_Y,
+    )
+
+    GAME_OPCODE_0005_NAME = str(character["name"])
+    GAME_OPCODE_0005_ARRAY2 = (
+        0x00100001,
+        int(character["body"]),
+        int(character["hair"]),
+        int(character["head"]),
+        int(character["hand_r"]),
+        int(character["hand_l"]),
+        int(character["pants"]),
+        int(character["foot_r"]),
+        int(character["foot_l"]),
+    )
+
+    OPCODE_7002_ROLE_TOKEN_STRING = build_role_token_from_character(
+        character
+    )
+
+    print(
+        f"[{now()}] Loaded runtime character from database: "
+        f"account={character['account_username']!r}, "
+        f"name={character['name']!r}, "
+        f"map_id={GAME_MAP_ID}, "
+        f"map_name={GAME_MAP_NAME!r}, "
+        f"spawn=({GAME_SPAWN_X}, {GAME_SPAWN_Y}), "
+        f"direction={int(character['direction'])}, "
+        f"scene_file={character['scene_file']!r}"
+    )
+
+
+def reload_runtime_character_for_game_login() -> None:
+    """
+    Reload the latest character row immediately before sending the existing
+    game-login 0x0002 -> 0x0005 sequence.
+    """
+    load_runtime_configuration()
+
+    if RUNTIME_CHARACTER is None:
+        raise RuntimeError(
+            "Database reload completed without a runtime character"
+        )
+
+    configure_game_handlers(
+        GameHandlerRuntime(
+            database=DATABASE,
+            character_id=int(RUNTIME_CHARACTER["id"]),
+            map_id=int(RUNTIME_CHARACTER["map_id"]),
+            character_name=str(RUNTIME_CHARACTER["name"]),
+        )
+    )
+
+    print(
+        f"[{now()}] Game-login runtime refresh complete: "
+        f"map_id={GAME_MAP_ID}, "
+        f"spawn=({GAME_SPAWN_X}, {GAME_SPAWN_Y}), "
+        f"packed_spawn=0x{GAME_OPCODE_0002_FIELD_14:08X}"
+    )
+
+
+# ============================================================
+# 日志辅助
+# ============================================================
+
+def now() -> str:
+    return datetime.datetime.now().strftime("%H:%M:%S")
+
+
+def ascii_view(data: bytes) -> str:
+    return "".join(
+        chr(value) if 32 <= value <= 126 else "."
+        for value in data
+    )
+
+
+def dump(label: str, data: bytes) -> None:
+    print(f"[{now()}] {label}: {len(data)} bytes")
+
+    if not data:
+        print("<empty>")
+        return
+
+    print(data.hex(" "))
+    print("ASCII:", ascii_view(data))
+
+
+# ============================================================
+# 加密状态对象
+# ============================================================
+
+
+
+# ============================================================
+# 加密表读取
+# ============================================================
+
+
+
+
+
+# ============================================================
+# 基础字节变换
+# ============================================================
+
+
+
+
+
+# ============================================================
+# 初始独立包加密
+# ============================================================
+
+
+
+
+
+
+
+
+
+# ============================================================
+# 连接状态式加密与解密
+# ============================================================
+
+
+
+
+
+
+# ============================================================
+# 状态式上下文诊断
+# ============================================================
+
+KNOWN_SELECTION_PLAIN = bytes.fromhex(
+    "00 01 90 06 00 00 00 02 00 01"
+)
+
+
+
+
+
+
+
+
+
+# ============================================================
+# 已知向量验证
+# ============================================================
+
+
+
+# ============================================================
+# 0x0002 跳转响应与测试监听器
+# ============================================================
+
+def build_redirect_response_data() -> bytes:
+    """构造 opcode 0x0002 的七个网络字段。"""
+    host = REDIRECT_HOST.encode("ascii") + b"\x00"
+    return (
+        REDIRECT_FIELD_00.to_bytes(4, "big")
+        + host
+        + REDIRECT_FIELD_08.to_bytes(2, "big")
+        + REDIRECT_FIELD_0A.to_bytes(2, "big")
+        + REDIRECT_FIELD_0C.to_bytes(2, "big")
+        + REDIRECT_FIELD_10.to_bytes(4, "big")
+        + REDIRECT_FIELD_14.to_bytes(4, "big")
+    )
+
+
+def dummy_game_listener(port: int) -> None:
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        server.bind((HOST, port))
+        server.listen(5)
+        print(f"[{now()}] Stage52 game listener active on {HOST}:{port}")
+        while True:
+            conn, addr = server.accept()
+            connection_control = ConnectionControl()
+
+            print("=" * 80)
+            print(f"[{now()}] GAME CONNECTION DETECTED on port {port}: {addr}")
+            try:
+                conn.settimeout(None)
+                data = conn.recv(4096)
+                if not data:
+                    print(f"[{now()}] Game client disconnected before initial packet")
+                    continue
+
+                dump(f"Game-port {port} first client encrypted data", data)
+
+                game_table = load_crypto_table(config.GKK2_PATH)
+                game_inverse_tables = build_inverse_tables(game_table)
+
+                key1, key2, plain, final_state = decode_initial_packet(
+                    packet=data,
+                    inverse_tables=game_inverse_tables,
+                )
+
+                game_client_state = StatefulCryptoContext(
+                    state=final_state,
+                    table_row=key1 % 10,
+                )
+
+                print(
+                    f"[{now()}] Game-port {port} decoded initial keys: "
+                    f"key1=0x{key1:02X}, key2=0x{key2:02X}, "
+                    f"row=0x{key1 % 10:02X}, final_state=0x{final_state:02X}"
+                )
+                dump(f"Game-port {port} first client decrypted plain", plain)
+
+                frame_type = -1
+                opcode = -1
+                payload = b""
+                if len(plain) >= 8:
+                    frame_type = int.from_bytes(plain[0:2], "big")
+                    opcode = int.from_bytes(plain[2:4], "big")
+                    payload_length = int.from_bytes(plain[4:8], "big")
+                    payload = plain[8:8 + payload_length]
+                    print(
+                        f"[{now()}] Game-port {port} parsed first frame: "
+                        f"type={frame_type}, opcode=0x{opcode:04X}, "
+                        f"payload_length={payload_length}, total_length={len(plain)}"
+                    )
+                    dump(f"Game-port {port} first frame payload", payload)
+
+                    GAME_DISPATCHER.dispatch(
+                        PacketContext(
+                            channel="game",
+                            frame_type=frame_type,
+                            opcode=opcode,
+                            payload=payload,
+                            peer=addr,
+                            control=connection_control,
+                        )
+                    )
+
+                if (
+                    ENABLE_GAME_OPCODE_0002_0005_ONLY_PROBE
+                    and frame_type == 1
+                    and opcode == 0x9007
+                ):
+                    # Reload SQLite state for every new game connection.
+                    reload_runtime_character_for_game_login()
+
+                    payload_0002 = build_game_opcode_0002_payload()
+                    plain_0002 = build_type1_plain(
+                        opcode=GAME_OPCODE_0002,
+                        payload=payload_0002,
+                    )
+
+                    encrypted_0002, send_key1, send_key2, game_server_state = (
+                        encode_initial_packet_with_context(
+                            plain=plain_0002,
+                            table=game_table,
+                        )
+                    )
+
+                    dump(f"Game-port {port} opcode 0x0002 map-init payload", payload_0002)
+                    dump(f"Game-port {port} opcode 0x0002 map-init plain", plain_0002)
+                    dump(f"Game-port {port} opcode 0x0002 map-init encrypted", encrypted_0002)
+                    print(
+                        f"[{now()}] Game-port {port} opcode 0x0002 initial send keys: "
+                        f"key1=0x{send_key1:02X}, key2=0x{send_key2:02X}, "
+                        f"row=0x{game_server_state.table_row:02X}, "
+                        f"state=0x{game_server_state.state:02X}"
+                    )
+                    print(
+                        f"[{now()}] Game-port {port} opcode 0x0002 fields: "
+                        f"map={GAME_OPCODE_0002_MAP_NAME!r}, "
+                        f"field00={GAME_OPCODE_0002_FIELD_00}, "
+                        f"field08={GAME_OPCODE_0002_FIELD_08}, "
+                        f"field0A={GAME_OPCODE_0002_FIELD_0A}, "
+                        f"field0C={GAME_OPCODE_0002_FIELD_0C}, "
+                        f"field10={GAME_OPCODE_0002_FIELD_10}, "
+                        f"field14={GAME_OPCODE_0002_FIELD_14}"
+                    )
+                    conn.sendall(encrypted_0002)
+                    print(f"[{now()}] Game-port {port} opcode 0x0002 map-init sent")
+
+                    time.sleep(GAME_OPCODE_0002_TO_0005_DELAY_SECONDS)
+
+                    payload_0005 = build_game_opcode_0005_payload()
+                    plain_0005 = build_type1_plain(
+                        opcode=GAME_OPCODE_0005,
+                        payload=payload_0005,
+                    )
+
+                    state_before_0005 = game_server_state.state
+                    encrypted_0005 = encode_stateful_packet(
+                        plain=plain_0005,
+                        table=game_table,
+                        context=game_server_state,
+                    )
+
+                    dump(f"Game-port {port} opcode 0x0005 probe payload", payload_0005)
+                    dump(f"Game-port {port} opcode 0x0005 probe plain", plain_0005)
+                    dump(f"Game-port {port} opcode 0x0005 probe encrypted", encrypted_0005)
+                    print(
+                        f"[{now()}] Game-port {port} opcode 0x0005 stateful send: "
+                        f"state_before=0x{state_before_0005:02X}, "
+                        f"state_after=0x{game_server_state.state:02X}, "
+                        f"row=0x{game_server_state.table_row:02X}"
+                    )
+                    print(
+                        f"[{now()}] Game-port {port} opcode 0x0005 fields: "
+                        f"name={GAME_OPCODE_0005_NAME!r}, "
+                        f"array1_count={len(GAME_OPCODE_0005_ARRAY1)}, "
+                        f"array2_count={len(GAME_OPCODE_0005_ARRAY2)}"
+                    )
+                    conn.sendall(encrypted_0005)
+                    print(f"[{now()}] Game-port {port} opcode 0x0005 probe sent")
+
+                    print(
+                        f"[{now()}] Game-port {port} opcode 0x0002 then 0x0005 probes "
+                        f"sent; 0x0007 intentionally disabled; connection remains open"
+                    )
+
+                    conn.settimeout(GAME_POST_REPLY_RECV_TIMEOUT_SECONDS)
+                    print(
+                        f"[{now()}] Game-port {port} waiting indefinitely for "
+                        f"client follow-up or disconnect"
+                    )
+                    followup_number = 0
+                    followup_stream = bytearray()
+
+                    while True:
+                        try:
+                            followup_cipher = conn.recv(4096)
+                        except socket.timeout:
+                            print(
+                                f"[{now()}] Game-port {port} unexpected receive timeout"
+                            )
+                            continue
+
+                        if not followup_cipher:
+                            print(
+                                f"[{now()}] Game-port {port} client disconnected "
+                                f"after opcode 0x0002/0x0005/0x0007 probes"
+                            )
+                            break
+
+                        followup_number += 1
+                        dump(
+                            f"Game-port {port} follow-up encrypted #{followup_number}",
+                            followup_cipher,
+                        )
+
+                        state_before = game_client_state.state
+                        followup_plain = decode_stateful_packet(
+                            ciphertext=followup_cipher,
+                            inverse_tables=game_inverse_tables,
+                            context=game_client_state,
+                        )
+                        print(
+                            f"[{now()}] Game-port {port} follow-up decode "
+                            f"#{followup_number}: state_before=0x{state_before:02X}, "
+                            f"state_after=0x{game_client_state.state:02X}, "
+                            f"row=0x{game_client_state.table_row:02X}"
+                        )
+                        dump(
+                            f"Game-port {port} follow-up plain #{followup_number}",
+                            followup_plain,
+                        )
+
+                        followup_stream.extend(followup_plain)
+                        frames = extract_plain_frames(followup_stream)
+                        for frame_number, frame in enumerate(frames, start=1):
+                            (
+                                followup_frame_type,
+                                followup_opcode,
+                                followup_payload,
+                            ) = describe_plain_frame(
+                                frame=frame,
+                                frame_number=frame_number,
+                            )
+
+                            GAME_DISPATCHER.dispatch(
+                                PacketContext(
+                                    channel="game",
+                                    frame_type=followup_frame_type,
+                                    opcode=followup_opcode,
+                                    payload=followup_payload,
+                                    peer=addr,
+                                    control=connection_control,
+                                )
+                            )
+
+                            if connection_control.close_requested:
+                                print(
+                                    f"[{now()}] Game-port {port} close requested: "
+                                    f"{connection_control.close_reason}"
+                                )
+                                break
+
+                        if connection_control.close_requested:
+                            try:
+                                conn.shutdown(socket.SHUT_RDWR)
+                                print(
+                                    f"[{now()}] Game-port {port} socket shutdown "
+                                    "completed for normal quit"
+                                )
+                            except OSError as error:
+                                print(
+                                    f"[{now()}] Game-port {port} socket shutdown "
+                                    f"warning: {error}"
+                                )
+                            break
+                else:
+                    print(
+                        f"[{now()}] Game-port {port} first frame is not "
+                        f"type=1 opcode=0x9007; no probe sent"
+                    )
+
+            except Exception as error:
+                print(
+                    f"[{now()}] Game listener {port} connection error: "
+                    f"{type(error).__name__}: {error}"
+                )
+            finally:
+                try:
+                    conn.close()
+                except OSError:
+                    pass
+                if connection_control.close_requested:
+                    print(
+                        f"[{now()}] Game-port {port} connection closed after "
+                        "normal client quit"
+                    )
+                else:
+                    print(f"[{now()}] Game-port {port} connection closed")
+    except Exception as error:
+        print(
+            f"[{now()}] Game listener {port} failed: "
+            f"{type(error).__name__}: {error}"
+        )
+    finally:
+        server.close()
+
+
+def start_dummy_game_listeners() -> None:
+    for port in DUMMY_GAME_PORTS:
+        thread = threading.Thread(
+            target=dummy_game_listener,
+            args=(port,),
+            daemon=True,
+        )
+        thread.start()
+
+
+# ============================================================
+# type 4 frame
+# ============================================================
+
+
+
+
+
+def send_type4_stateful(
+    conn: socket.socket,
+    table: bytes,
+    context: StatefulCryptoContext,
+    opcode: int,
+    data: bytes,
+    label: str = "Server opcode",
+) -> None:
+    """
+    使用服务器发送方向的状态式上下文发送 type 4 frame。
+
+    type 4 明文格式：
+        00 04
+        payload_length，4 字节大端，包含 opcode 两字节
+        opcode，2 字节大端
+        data
+    """
+
+    state_before = context.state
+
+    plain = build_type4_plain(
+        opcode=opcode,
+        data=data,
+    )
+
+    encrypted = encode_stateful_packet(
+        plain=plain,
+        table=table,
+        context=context,
+    )
+
+    dump(
+        f"{label} 0x{opcode:04X} plain",
+        plain,
+    )
+
+    dump(
+        f"{label} 0x{opcode:04X} encrypted",
+        encrypted,
+    )
+
+    print(
+        f"[{now()}] {label} 0x{opcode:04X} send context: "
+        f"state_before=0x{state_before:02X}, "
+        f"state_after=0x{context.state:02X}, "
+        f"row=0x{context.table_row:02X}"
+    )
+
+    conn.sendall(encrypted)
+
+
+def build_server_list_plain() -> bytes:
+    """
+    构造 0x7009 服务器列表项：
+
+        uint16
+        C string
+        uint16
+    """
+
+    name_bytes = (
+        SERVER_NAME.encode(
+            "ascii",
+            errors="strict",
+        )
+        + b"\x00"
+    )
+
+    record = (
+        SERVER_FIELD1.to_bytes(2, "big")
+        + name_bytes
+        + SERVER_FIELD3.to_bytes(2, "big")
+    )
+
+    return build_type4_plain(
+        opcode=SERVER_LIST_OPCODE,
+        data=record,
+    )
+
+
+
+def build_response_0015_data() -> bytes:
+    string1 = RESPONSE_0015_STRING1.encode("ascii", errors="strict") + b"\x00"
+    string2 = RESPONSE_0015_STRING2.encode("ascii", errors="strict") + b"\x00"
+    return (
+        string1
+        + string2
+        + RESPONSE_0015_UINT32_A.to_bytes(4, "big")
+        + RESPONSE_0015_UINT16.to_bytes(2, "big")
+        + RESPONSE_0015_UINT8.to_bytes(1, "big")
+        + RESPONSE_0015_UINT32_B.to_bytes(4, "big")
+    )
+
+
+# ============================================================
+# 连续明文帧解析
+# ============================================================
+
+
+
+
+
+
+# ============================================================
+# 客户端包说明
+# ============================================================
+
+def describe_initial_login_plain(
+    plain: bytes,
+) -> None:
+    if len(plain) < 8:
+        return
+
+    print(
+        f"[{now()}] Initial login prefix: "
+        f"{plain[:8].hex(' ')}"
+    )
+
+    if plain[:2] == b"\x00\x01":
+        print(
+            f"[{now()}] Initial login request detected"
+        )
+
+
+def describe_server_selection_plain(
+    plain: bytes,
+) -> None:
+    """
+    当前确认的服务器选择请求：
+
+        00 01 90 06 00 00 00 02 00 01
+    """
+
+    expected = KNOWN_SELECTION_PLAIN
+
+    if plain == expected:
+        print(
+            f"[{now()}] Confirmed server-selection request"
+        )
+
+        print(
+            f"[{now()}] Selection command/header: "
+            f"{plain[0:4].hex(' ')}"
+        )
+
+        print(
+            f"[{now()}] Selection uint32 field: "
+            f"{int.from_bytes(plain[4:8], 'big')}"
+        )
+
+        print(
+            f"[{now()}] Selected uint16 field: "
+            f"{int.from_bytes(plain[8:10], 'big')}"
+        )
+
+        return
+
+    print(
+        f"[{now()}] Stateful packet does not match "
+        f"the known selection request"
+    )
+
+    if len(plain) >= 4:
+        print(
+            f"[{now()}] First 4 bytes: "
+            f"{plain[:4].hex(' ')}"
+        )
+
+    if len(plain) >= 8:
+        print(
+            f"[{now()}] Bytes 4-7 as big-endian uint32: "
+            f"{int.from_bytes(plain[4:8], 'big')}"
+        )
+
+    if len(plain) >= 10:
+        print(
+            f"[{now()}] Bytes 8-9 as big-endian uint16: "
+            f"{int.from_bytes(plain[8:10], 'big')}"
+        )
+
+
+# ============================================================
+# 单个连接处理
+# ============================================================
+
+def handle_client(
+    conn: socket.socket,
+    addr: tuple[str, int],
+    table: bytes,
+    inverse_tables: list[list[int]],
+) -> None:
+    print("=" * 80)
+    print(
+        f"[{now()}] Client connected: {addr}"
+    )
+
+    # x32dbg 调试时不启用超时
+    conn.settimeout(None)
+
+    # 客户端发送方向的状态将在初始登录包解密后动态建立。
+    client_state: Optional[StatefulCryptoContext] = None
+
+    try:
+        # ----------------------------------------------------
+        # 初始登录包
+        # ----------------------------------------------------
+
+        initial_packet = conn.recv(4096)
+
+        if not initial_packet:
+            print(
+                f"[{now()}] Client sent no initial data"
+            )
+            return
+
+        dump(
+            "Client initial encrypted packet",
+            initial_packet,
+        )
+
+        try:
+            key1, key2, initial_plain, initial_final_state = (
+                decode_initial_packet(
+                    packet=initial_packet,
+                    inverse_tables=inverse_tables,
+                )
+            )
+
+            # 后续客户端包沿用初始登录包的表行与最终滚动状态。
+            client_state = StatefulCryptoContext(
+                state=initial_final_state,
+                table_row=key1 % 10,
+            )
+
+            print(
+                f"[{now()}] Client initial keys: "
+                f"key1=0x{key1:02X}, "
+                f"key2=0x{key2:02X}, "
+                f"table_row={key1 % 10}"
+            )
+
+            print(
+                f"[{now()}] Derived follow-up crypto context: "
+                f"state=0x{initial_final_state:02X}, "
+                f"row=0x{key1 % 10:02X}"
+            )
+
+            dump(
+                "Client initial decrypted plain",
+                initial_plain,
+            )
+
+            describe_initial_login_plain(
+                initial_plain
+            )
+
+        except Exception as error:
+            print(
+                f"[{now()}] Initial packet decode failed: "
+                f"{type(error).__name__}: {error}"
+            )
+            print(
+                f"[{now()}] Cannot derive follow-up crypto context; "
+                f"closing this connection"
+            )
+            return
+
+        # ----------------------------------------------------
+        # 返回服务器列表
+        # ----------------------------------------------------
+
+        server_plain = build_server_list_plain()
+
+        (
+            server_encrypted,
+            server_key1,
+            server_key2,
+            server_send_state,
+        ) = encode_initial_packet_with_context(
+            plain=server_plain,
+            table=table,
+        )
+
+        print(
+            f"[{now()}] Server-list opcode: "
+            f"0x{SERVER_LIST_OPCODE:04X}"
+        )
+
+        print(
+            f"[{now()}] Server-list record: "
+            f"field1={SERVER_FIELD1}, "
+            f"name={SERVER_NAME!r}, "
+            f"field3={SERVER_FIELD3}"
+        )
+
+        dump(
+            "Server-list plain",
+            server_plain,
+        )
+
+        dump(
+            "Server-list encrypted packet",
+            server_encrypted,
+        )
+
+        conn.sendall(server_encrypted)
+
+        print(
+            f"[{now()}] Server-list packet sent"
+        )
+
+
+        print(
+            f"[{now()}] Derived server follow-up send context: "
+            f"state=0x{server_send_state.state:02X}, "
+            f"row=0x{server_send_state.table_row:02X}"
+        )
+
+        print(
+            f"[{now()}] Server send context is ready for the "
+            f"post-selection diagnostic probe"
+        )
+
+        def login_handler_send_type4(
+            opcode: int,
+            data: bytes,
+            label: str,
+        ) -> None:
+            send_type4_stateful(
+                conn=conn,
+                table=table,
+                context=server_send_state,
+                opcode=opcode,
+                data=data,
+                label=label,
+            )
+
+        configure_login_handlers(
+            LoginHandlerRuntime(
+                send_type4=login_handler_send_type4,
+                role_token=OPCODE_7002_ROLE_TOKEN_STRING,
+                role_list_delay_seconds=(
+                    OPCODE_7002_DELAY_AFTER_9005_SECONDS
+                ),
+                role_count=OPCODE_7002_UINT16,
+                enter_game_delay_seconds=(
+                    ENTER_GAME_CHANGE_CONNECT_DELAY_SECONDS
+                ),
+                enter_game_status=ENTER_GAME_STATUS_UINT16,
+                enter_game_ticket=ENTER_GAME_TICKET_BYTES,
+                enter_game_connect_info=ENTER_GAME_CONNECT_INFO,
+            )
+        )
+
+        if client_state is None:
+            raise RuntimeError(
+                "客户端状态式上下文尚未建立"
+            )
+
+        print(
+            f"[{now()}] Stateful client decode context: "
+            f"state=0x{client_state.state:02X}, "
+            f"row=0x{client_state.table_row:02X}"
+        )
+
+        # ----------------------------------------------------
+        # 后续客户端包
+        # ----------------------------------------------------
+
+        packet_number = 0
+        parsed_frame_number = 0
+        plaintext_stream = bytearray()
+        redirect_sent = False
+        response_0015_sent = False
+
+        while True:
+            ciphertext = conn.recv(4096)
+
+            if not ciphertext:
+                print(
+                    f"[{now()}] Client disconnected"
+                )
+                break
+
+            packet_number += 1
+
+            dump(
+                f"Client follow-up ciphertext "
+                f"#{packet_number}",
+                ciphertext,
+            )
+
+            if not ENABLE_STATEFUL_FOLLOWUP_DECODE:
+                continue
+
+            state_before = client_state.state
+
+            try:
+                plain = decode_stateful_packet(
+                    ciphertext=ciphertext,
+                    inverse_tables=inverse_tables,
+                    context=client_state,
+                )
+
+                print(
+                    f"[{now()}] Stateful decode "
+                    f"#{packet_number}: "
+                    f"state_before=0x{state_before:02X}, "
+                    f"state_after=0x{client_state.state:02X}, "
+                    f"row=0x{client_state.table_row:02X}"
+                )
+
+                dump(
+                    f"Client follow-up plaintext "
+                    f"#{packet_number}",
+                    plain,
+                )
+
+                plaintext_stream.extend(plain)
+
+                frames = extract_plain_frames(
+                    plaintext_stream
+                )
+
+                for frame in frames:
+                    parsed_frame_number += 1
+
+                    (
+                        frame_type,
+                        opcode,
+                        payload,
+                    ) = describe_plain_frame(
+                        frame=frame,
+                        frame_number=parsed_frame_number,
+                    )
+
+                    LOGIN_DISPATCHER.dispatch(
+                        PacketContext(
+                            channel="login",
+                            frame_type=frame_type,
+                            opcode=opcode,
+                            payload=payload,
+                            peer=addr,
+                        )
+                    )
+
+                    if (
+                        frame_type == 1
+                        and opcode == 0x9005
+                    ):
+                        # Stage70: the dispatcher/login handler now owns
+                        # the real 0x9005 -> 0x7002 response.
+                        pass
+
+                    if (
+                        frame_type == 1
+                        and opcode == 0x9002
+                    ):
+                        # Stage71: the dispatcher/login handler now owns
+                        # the real 0x9002 -> 0x7003 ChangeConnect response.
+                        pass
+
+                    if (
+                        frame_type == 1
+                        and opcode == 0x9003
+                    ):
+                        print(f"[{now()}] Confirmed opcode 0x9003 create-character request")
+                        dump("Opcode 0x9003 create-character payload", payload)
+                        print(
+                            f"[{now()}] Stage27 does not respond to 0x9003; "
+                            f"existing-role flow should avoid character creation."
+                        )
+
+                    if (
+                        frame_type == 1
+                        and opcode == 0x8015
+                        and not response_0015_sent
+                    ):
+                        response_0015_data = build_response_0015_data()
+                        response_0015_plain = build_type4_plain(
+                            opcode=0x0015,
+                            data=response_0015_data,
+                        )
+                        state_before_0015 = server_send_state.state
+                        response_0015_encrypted = encode_stateful_packet(
+                            plain=response_0015_plain,
+                            table=table,
+                            context=server_send_state,
+                        )
+                        dump("Opcode-0x0015 response plain", response_0015_plain)
+                        dump("Opcode-0x0015 response encrypted", response_0015_encrypted)
+                        print(
+                            f"[{now()}] 0x0015 fields: "
+                            f"string1={RESPONSE_0015_STRING1!r}, "
+                            f"string2={RESPONSE_0015_STRING2!r}, "
+                            f"uint32_a={RESPONSE_0015_UINT32_A}, "
+                            f"uint16={RESPONSE_0015_UINT16}, "
+                            f"uint8={RESPONSE_0015_UINT8}, "
+                            f"uint32_b={RESPONSE_0015_UINT32_B}"
+                        )
+                        print(
+                            f"[{now()}] 0x0015 send context: "
+                            f"state_before=0x{state_before_0015:02X}, "
+                            f"state_after=0x{server_send_state.state:02X}, "
+                            f"row=0x{server_send_state.table_row:02X}"
+                        )
+                        conn.sendall(response_0015_encrypted)
+                        response_0015_sent = True
+                        print(f"[{now()}] Opcode 0x0015 test response sent")
+
+                    if (
+                        frame_type == 1
+                        and opcode == 0x9006
+                        and payload == b"\x00\x01"
+                    ):
+                        print(
+                            f"[{now()}] Confirmed server-selection request"
+                        )
+
+                        if (
+                            ENABLE_UNKNOWN_OPCODE_PROBE
+                            and not redirect_sent
+                        ):
+                            redirect_data = (
+                                build_redirect_response_data()
+                            )
+                            probe_plain = build_type4_plain(
+                                opcode=PROBE_OPCODE,
+                                data=redirect_data,
+                            )
+
+                            probe_state_before = (
+                                server_send_state.state
+                            )
+
+                            probe_encrypted = (
+                                encode_stateful_packet(
+                                    plain=probe_plain,
+                                    table=table,
+                                    context=server_send_state,
+                                )
+                            )
+
+                            dump(
+                                "Opcode-0x0002 scene plain",
+                                probe_plain,
+                            )
+
+                            dump(
+                                "Opcode-0x0002 scene encrypted",
+                                probe_encrypted,
+                            )
+
+                            print(
+                                f"[{now()}] Probe send context: "
+                                f"state_before="
+                                f"0x{probe_state_before:02X}, "
+                                f"state_after="
+                                f"0x{server_send_state.state:02X}, "
+                                f"row="
+                                f"0x{server_send_state.table_row:02X}"
+                            )
+
+                            print(
+                                f"[{now()}] Scene fields: "
+                                f"field00={REDIRECT_FIELD_00}, "
+                                f"host={REDIRECT_HOST}, "
+                                f"field08={REDIRECT_FIELD_08}, "
+                                f"field0A={REDIRECT_FIELD_0A}, "
+                                f"field0C={REDIRECT_FIELD_0C}, "
+                                f"field10={REDIRECT_FIELD_10}, "
+                                f"field14={REDIRECT_FIELD_14}"
+                            )
+
+                            conn.sendall(probe_encrypted)
+                            redirect_sent = True
+
+                            print(
+                                f"[{now()}] Opcode "
+                                f"0x{PROBE_OPCODE:04X} "
+                                f"scene response sent"
+                            )
+
+                            if ENABLE_OPCODE_7003_PROBE:
+                                print(
+                                    f"[{now()}] Waiting "
+                                    f"{OPCODE_7003_PROBE_DELAY_SECONDS:.2f}s "
+                                    f"before opcode 0x7003 probe"
+                                )
+
+                                time.sleep(
+                                    OPCODE_7003_PROBE_DELAY_SECONDS
+                                )
+
+                                # 0x7003 stage18 字段：
+                                #   type02 = uint16
+                                #   type09 = uint32 length + raw bytes
+                                #   tail   = 1 byte placeholder
+                                #
+                                # 完整 data 长度固定为 8：
+                                #   2 + 4 + 1 + 1 = 8
+                                opcode_7003_data = b"".join((
+                                    OPCODE_7003_UINT16.to_bytes(2, "big"),
+                                    len(OPCODE_7003_TYPE09_BYTES).to_bytes(4, "big"),
+                                    OPCODE_7003_TYPE09_BYTES,
+                                    OPCODE_7003_TAIL_BYTE,
+                                ))
+
+                                expected_7003_len = 8
+
+                                if len(opcode_7003_data) != expected_7003_len:
+                                    raise RuntimeError(
+                                        f"opcode 0x7003 data size must be 8, "
+                                        f"got {len(opcode_7003_data)}"
+                                    )
+
+                                print(
+                                    f"[{now()}] Opcode 0x7003 stage18 fields: "
+                                    f"u16={OPCODE_7003_UINT16}, "
+                                    f"type09_len={len(OPCODE_7003_TYPE09_BYTES)}, "
+                                    f"tail_len={len(OPCODE_7003_TAIL_BYTE)}, "
+                                    f"data_len={len(opcode_7003_data)}"
+                                )
+
+                                send_type4_stateful(
+                                    conn=conn,
+                                    table=table,
+                                    context=server_send_state,
+                                    opcode=0x7003,
+                                    data=opcode_7003_data,
+                                    label="Opcode-0x7003 probe",
+                                )
+
+                                print(
+                                    f"[{now()}] Opcode 0x7003 probe sent"
+                                )
+
+                                if ENABLE_OPCODE_7004_PROBE:
+                                    print(
+                                        f"[{now()}] Waiting "
+                                        f"{OPCODE_7004_PROBE_DELAY_SECONDS:.2f}s "
+                                        f"before opcode 0x7004 probe"
+                                    )
+
+                                    time.sleep(
+                                        OPCODE_7004_PROBE_DELAY_SECONDS
+                                    )
+
+                                    opcode_7004_data = (
+                                        OPCODE_7004_UINT16.to_bytes(2, "big")
+                                    )
+
+                                    expected_7004_len = 2
+
+                                    if len(opcode_7004_data) != expected_7004_len:
+                                        raise RuntimeError(
+                                            f"opcode 0x7004 data size must be 2, "
+                                            f"got {len(opcode_7004_data)}"
+                                        )
+
+                                    print(
+                                        f"[{now()}] Opcode 0x7004 stage18 fields: "
+                                        f"u16={OPCODE_7004_UINT16}, "
+                                        f"data_len={len(opcode_7004_data)}"
+                                    )
+
+                                    send_type4_stateful(
+                                        conn=conn,
+                                        table=table,
+                                        context=server_send_state,
+                                        opcode=0x7004,
+                                        data=opcode_7004_data,
+                                        label="Opcode-0x7004 probe",
+                                    )
+
+                                    print(
+                                        f"[{now()}] Opcode 0x7004 probe sent"
+                                    )
+
+                                    if ENABLE_OPCODE_7006_PROBE:
+                                        print(
+                                            f"[{now()}] Waiting "
+                                            f"{OPCODE_7006_PROBE_DELAY_SECONDS:.2f}s "
+                                            f"before opcode 0x7006 probe"
+                                        )
+
+                                        time.sleep(
+                                            OPCODE_7006_PROBE_DELAY_SECONDS
+                                        )
+
+                                        opcode_7006_data = bytes((
+                                            OPCODE_7006_UINT8 & 0xFF,
+                                        ))
+
+                                        expected_7006_len = 1
+
+                                        if len(opcode_7006_data) != expected_7006_len:
+                                            raise RuntimeError(
+                                                f"opcode 0x7006 data size must be 1, "
+                                                f"got {len(opcode_7006_data)}"
+                                            )
+
+                                        print(
+                                            f"[{now()}] Opcode 0x7006 stage18 fields: "
+                                            f"u8={OPCODE_7006_UINT8}, "
+                                            f"data_len={len(opcode_7006_data)}"
+                                        )
+
+                                        send_type4_stateful(
+                                            conn=conn,
+                                            table=table,
+                                            context=server_send_state,
+                                            opcode=0x7006,
+                                            data=opcode_7006_data,
+                                            label="Opcode-0x7006 probe",
+                                        )
+
+                                        print(
+                                            f"[{now()}] Opcode 0x7006 probe sent"
+                                        )
+
+                                        if ENABLE_OPCODE_7008_PROBE:
+                                            print(
+                                                f"[{now()}] Waiting "
+                                                f"{OPCODE_7008_PROBE_DELAY_SECONDS:.2f}s "
+                                                f"before opcode 0x7008 probe"
+                                            )
+
+                                            time.sleep(
+                                                OPCODE_7008_PROBE_DELAY_SECONDS
+                                            )
+
+                                            # 0x7008 stage19 字段：
+                                            #   type02 = uint16
+                                            #   C string 1，空串为 00
+                                            #   C string 2，空串为 00
+                                            #
+                                            # 预期 data length = 2 + 1 + 1 = 4。
+                                            opcode_7008_data = b"".join((
+                                                OPCODE_7008_UINT16.to_bytes(2, "big"),
+                                                OPCODE_7008_STRING_A.encode("ascii") + b"\x00",
+                                                OPCODE_7008_STRING_B.encode("ascii") + b"\x00",
+                                            ))
+
+                                            expected_7008_len = 4
+
+                                            if len(opcode_7008_data) != expected_7008_len:
+                                                raise RuntimeError(
+                                                    f"opcode 0x7008 data size must be 4, "
+                                                    f"got {len(opcode_7008_data)}"
+                                                )
+
+                                            print(
+                                                f"[{now()}] Opcode 0x7008 stage19 fields: "
+                                                f"u16={OPCODE_7008_UINT16}, "
+                                                f"string_a='{OPCODE_7008_STRING_A}', "
+                                                f"string_b='{OPCODE_7008_STRING_B}', "
+                                                f"data_len={len(opcode_7008_data)}"
+                                            )
+
+                                            send_type4_stateful(
+                                                conn=conn,
+                                                table=table,
+                                                context=server_send_state,
+                                                opcode=0x7008,
+                                                data=opcode_7008_data,
+                                                label="Opcode-0x7008 probe",
+                                            )
+
+                                            print(
+                                                f"[{now()}] Opcode 0x7008 probe sent"
+                                            )
+
+            except Exception as error:
+                print(
+                    f"[{now()}] Stateful decode failed "
+                    f"#{packet_number}: "
+                    f"{type(error).__name__}: {error}"
+                )
+
+    except ConnectionResetError:
+        print(
+            f"[{now()}] Connection reset by client"
+        )
+
+    except BrokenPipeError:
+        print(
+            f"[{now()}] Broken pipe"
+        )
+
+    except KeyboardInterrupt:
+        raise
+
+    except Exception as error:
+        print(
+            f"[{now()}] Connection error: "
+            f"{type(error).__name__}: {error}"
+        )
+
+    finally:
+        try:
+            conn.close()
+        except OSError:
+            pass
+
+        print(
+            f"[{now()}] Connection closed"
+        )
+
+
+# ============================================================
+# 主程序
+# ============================================================
+
+def main() -> None:
+    # Initial load supplies the login-server role list.
+    # Game state is refreshed again on every 0x9007 connection.
+    load_runtime_configuration()
+
+    table = load_crypto_table(config.GKK2_PATH)
+
+    print(
+        f"[{now()}] Building inverse crypto tables"
+    )
+
+    inverse_tables = build_inverse_tables(table)
+
+    print(
+        f"[{now()}] Inverse crypto tables ready"
+    )
+
+    # 启动时先验证状态式算法
+    verify_known_stateful_vector(
+        inverse_tables=inverse_tables,
+    )
+
+    print(
+        f"[{now()}] Listening on "
+        f"{HOST}:{PORT}"
+    )
+
+    print(
+        f"[{now()}] Server-list opcode: "
+        f"0x{SERVER_LIST_OPCODE:04X}"
+    )
+
+    print(
+        f"[{now()}] Server name: "
+        f"{SERVER_NAME}"
+    )
+
+    print(
+        f"[{now()}] Known-vector test state: "
+        f"0x{CLIENT_INITIAL_STATE:02X}"
+    )
+
+    print(
+        f"[{now()}] Known-vector test table row: "
+        f"0x{CLIENT_TABLE_ROW:02X}"
+    )
+
+    print(
+        f"[{now()}] Press Ctrl+C to stop"
+    )
+
+    start_dummy_game_listeners()
+
+    server = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_STREAM,
+    )
+
+    server.setsockopt(
+        socket.SOL_SOCKET,
+        socket.SO_REUSEADDR,
+        1,
+    )
+
+    server.bind((HOST, PORT))
+    server.listen(20)
+
+    try:
+        while True:
+            conn, addr = server.accept()
+
+            handle_client(
+                conn=conn,
+                addr=addr,
+                table=table,
+                inverse_tables=inverse_tables,
+            )
+
+    except KeyboardInterrupt:
+        print(
+            f"\n[{now()}] Server stopped"
+        )
+
+    finally:
+        server.close()
+
+
+if __name__ == "__main__":
+    main()
