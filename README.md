@@ -28,7 +28,11 @@ Get-NetAdapter
 
 你会看到类似：
 
-EthernetWLANEthernet 2
+Ethernet
+
+WLAN
+
+Ethernet 2
 
 找到那个新出现的 Loopback 网卡，比如叫Ethernet 2，可以改名：
 
