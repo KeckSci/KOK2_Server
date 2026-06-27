@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kok2_skill_table version="current" active_set="level1_warrior" text_encoding="CP936">
+  <!--
+    Opcode 0x0022 descriptor 00634DD8 decoded layout:
+    +00  u16   skill_id              Python 决定；若 Python 为 ()，则使用 <skill_sets> active_set
+    +02  u8    ui_skill              查 <skills>/<skill ui_skill="...">，含义来自 <ui_skills>
+    +03  u8    skill_type            查 <skills>/<skill skill_type="...">，含义来自 <skill_types>
+    +04  u8    unknown               Python 决定，当前默认 1
+    +08  cstr  skill_name            查 <skills>/<skill name="...">
+    +0C  u8    unknown               Python 决定，当前默认 1
+    +0E  u16   unknown               Python 决定，当前默认 1
+    +10  u8    current_skill_level   Python 决定，当前默认 1
+    +14  u32   exp_to_next_level     由 +10 计算：10 + 88*(level-1)^2 + 88*(level-1)
+    +18  u8    required_role_level   查 <skills>/<skill required_level="...">；缺省时等于 +10
+    +1C  array u32_array             当前默认空数组
+  -->
+  <opcode_0022_defaults field1C=""/>
+  <!-- Database skill-cost rules are authoritative; this is only a fallback. -->
+  <experience_formula kind="legacy_fallback" constant="10" quadratic="88" linear="88" shift="1"/>
+
+  <ui_skills>
+    <ui_skill id="0" name="属性资料"/>
+    <ui_skill id="1" name="基本技能"/>
+    <ui_skill id="2" name="一转技能"/>
+    <ui_skill id="3" name="二转技能"/>
+    <ui_skill id="4" name="三转技能"/>
+  </ui_skills>
+
+  <skill_types>
+    <skill_type id="0" name="被动技能"/>
+    <skill_type id="1" name="主动技能"/>
+    <skill_type id="2" name="武器招式"/>
+    <skill_type id="3" name="能量魔法"/>
+    <skill_type id="4" name="幻术魔法"/>
+    <skill_type id="5" name="神圣魔法"/>
+    <skill_type id="6" name="自然魔法"/>
+    <skill_type id="7" name="纯能量"/>
+    <skill_type id="8" name="力场"/>
+    <skill_type id="9" name="魔法阵"/>
+  </skill_types>
+
+  <skills>
+    <skill id="0x0001" value="1" name="等级" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0002" value="2" name="生命力" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0003" value="3" name="魔力" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0004" value="4" name="精力" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0005" value="5" name="力量" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0006" value="6" name="敏捷" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0007" value="7" name="智力" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="0x0008" value="8" name="体质" ui_skill="0" ui_skill_name="属性资料"/>
+    <skill id="10001" value="10001" name="近身战技" ui_skill="1" ui_skill_name="基本技能" skill_type="0" skill_type_name="被动技能" required_level="1"/>
+    <skill id="10002" value="10002" name="防御技巧" ui_skill="1" ui_skill_name="基本技能" skill_type="1" skill_type_name="主动技能" required_level="1"/>
+    <skill id="10003" value="10003" name="重击" ui_skill="1" ui_skill_name="基本技能" skill_type="2" skill_type_name="武器招式" required_level="1"/>
+    <skill id="10004" value="10004" name="斗志提升" ui_skill="1" ui_skill_name="基本技能" skill_type="1" skill_type_name="主动技能" required_level="5"/>
+    <skill id="10005" value="10005" name="体质提升" ui_skill="1" ui_skill_name="基本技能" skill_type="0" skill_type_name="被动技能" required_level="5"/>
+    <skill id="10006" value="10006" name="战吼" ui_skill="1" ui_skill_name="基本技能" skill_type="1" skill_type_name="主动技能" required_level="5"/>
+    <skill id="10007" value="10007" name="人身保护" ui_skill="1" ui_skill_name="基本技能" skill_type="1" skill_type_name="主动技能" required_level="10"/>
+    <skill id="10008" value="10008" name="肉体锻炼" ui_skill="1" ui_skill_name="基本技能" skill_type="0" skill_type_name="被动技能" required_level="10"/>
+    <skill id="10009" value="10009" name="瞄准射击" ui_skill="1" ui_skill_name="基本技能" skill_type="2" skill_type_name="武器招式" required_level="10"/>
+    <skill id="10010" value="10010" name="防御突破" ui_skill="1" ui_skill_name="基本技能" skill_type="1" skill_type_name="主动技能" required_level="10"/>
+    <skill id="10011" value="10011" name="药效提升" ui_skill="1" ui_skill_name="基本技能" skill_type="0" skill_type_name="被动技能" required_level="10"/>
+    <skill id="11001" value="11001" name="怒吼"/>
+    <skill id="11002" value="11002" name="嗜血"/>
+    <skill id="11003" value="11003" name="激怒"/>
+    <skill id="11004" value="11004" name="破坏重击"/>
+    <skill id="11005" value="11005" name="狂吼"/>
+    <skill id="11006" value="11006" name="威吓"/>
+    <skill id="11007" value="11007" name="斗志提升Ⅱ"/>
+    <skill id="11008" value="11008" name="狂风斧"/>
+    <skill id="11009" value="11009" name="巨魔体质"/>
+    <skill id="11010" value="11010" name="狂暴状态"/>
+    <skill id="11011" value="11011" name="震荡打击"/>
+    <skill id="11012" value="11012" name="狂暴攻击"/>
+    <skill id="11013" value="11013" name="药效强化"/>
+    <skill id="11101" value="11101" name="强化打击"/>
+    <skill id="11102" value="11102" name="盾牌技巧"/>
+    <skill id="11103" value="11103" name="挑衅"/>
+    <skill id="11104" value="11104" name="盾击"/>
+    <skill id="11105" value="11105" name="斗志提升Ⅱ"/>
+    <skill id="11106" value="11106" name="十字斩"/>
+    <skill id="11107" value="11107" name="信念"/>
+    <skill id="11108" value="11108" name="闪躲"/>
+    <skill id="11109" value="11109" name="防守姿态"/>
+    <skill id="11110" value="11110" name="坚守"/>
+    <skill id="11111" value="11111" name="扫荡"/>
+    <skill id="11112" value="11112" name="魔法闪躲"/>
+    <skill id="20001" value="20001" name="冥思" ui_skill="1" ui_skill_name="基本技能" skill_type="0" skill_type_name="被动技能" required_level="1"/>
+    <skill id="20002" value="20002" name="火球术" ui_skill="1" ui_skill_name="基本技能" skill_type="3" skill_type_name="能量魔法" required_level="1"/>
+    <skill id="20003" value="20003" name="亚伯拉之盾" ui_skill="1" ui_skill_name="基本技能" skill_type="8" skill_type_name="力场" required_level="1"/>
+    <skill id="20004" value="20004" name="冰箭术"/>
+    <skill id="20005" value="20005" name="魔犬术"/>
+    <skill id="20006" value="20006" name="风刃术"/>
+    <skill id="20007" value="20007" name="元素守护"/>
+    <skill id="20008" value="20008" name="魔力提升"/>
+    <skill id="20009" value="20009" name="投石术"/>
+    <skill id="20010" value="20010" name="传送术"/>
+    <skill id="20011" value="20011" name="能量灌注"/>
+    <skill id="21001" value="21001" name="元素召唤"/>
+    <skill id="21002" value="21002" name="闪电球"/>
+    <skill id="21003" value="21003" name="火球术Ⅱ"/>
+    <skill id="21004" value="21004" name="冰箭Ⅱ"/>
+    <skill id="21005" value="21005" name="冥思Ⅱ"/>
+    <skill id="21006" value="21006" name="魔力提升Ⅱ"/>
+    <skill id="21007" value="21007" name="元素守护Ⅱ"/>
+    <skill id="21008" value="21008" name="毒击术"/>
+    <skill id="21009" value="21009" name="吸魂术"/>
+    <skill id="21010" value="21010" name="炎之柱"/>
+    <skill id="21011" value="21011" name="禁言术"/>
+    <skill id="21012" value="21012" name="冰刃风暴"/>
+    <skill id="21013" value="21013" name="暗之盾"/>
+    <skill id="21014" value="21014" name="落石术"/>
+    <skill id="21015" value="21015" name="能量中和"/>
+    <skill id="21101" value="21101" name="元素召唤"/>
+    <skill id="21102" value="21102" name="冥思Ⅱ"/>
+    <skill id="21103" value="21103" name="元素守护Ⅱ"/>
+    <skill id="21104" value="21104" name="风刃术Ⅱ"/>
+    <skill id="21105" value="21105" name="冰箭Ⅱ"/>
+    <skill id="21106" value="21106" name="烈焰法阵"/>
+    <skill id="21107" value="21107" name="毒击术"/>
+    <skill id="21108" value="21108" name="暗之盾"/>
+    <skill id="21109" value="21109" name="吸魂术"/>
+    <skill id="21110" value="21110" name="心灵爆破"/>
+    <skill id="21111" value="21111" name="能量流失"/>
+    <skill id="21112" value="21112" name="衰弱术"/>
+    <skill id="21113" value="21113" name="禁言术"/>
+    <skill id="21114" value="21114" name="抗性衰减"/>
+    <skill id="21115" value="21115" name="智能耗弱"/>
+    <skill id="21116" value="21116" name="迟缓法咒"/>
+    <skill id="30001" value="30001" name="祈祷" ui_skill="1" ui_skill_name="基本技能" skill_type="5" skill_type_name="神圣魔法" required_level="1"/>
+    <skill id="30002" value="30002" name="飞拳术" ui_skill="1" ui_skill_name="基本技能" skill_type="5" skill_type_name="神圣魔法" required_level="1"/>
+    <skill id="30003" value="30003" name="急救术" ui_skill="1" ui_skill_name="基本技能" skill_type="5" skill_type_name="神圣魔法" required_level="1"/>
+    <skill id="30004" value="30004" name="硬皮术"/>
+    <skill id="30005" value="30005" name="元素抗性"/>
+    <skill id="30006" value="30006" name="知识吸收"/>
+    <skill id="30007" value="30007" name="强壮术"/>
+    <skill id="30008" value="30008" name="财富术"/>
+    <skill id="30009" value="30009" name="专注术"/>
+    <skill id="30010" value="30010" name="痛苦祷言"/>
+    <skill id="30011" value="30011" name="月光术"/>
+    <skill id="30012" value="30012" name="净化"/>
+    <skill id="31001" value="31001" name="医疗术"/>
+    <skill id="31002" value="31002" name="强力恢复"/>
+    <skill id="31003" value="31003" name="神之巨拳"/>
+    <skill id="31004" value="31004" name="祈祷Ⅱ"/>
+    <skill id="31005" value="31005" name="惩戒之锤"/>
+    <skill id="31006" value="31006" name="神圣之力"/>
+    <skill id="31007" value="31007" name="神佑术"/>
+    <skill id="31008" value="31008" name="复活术"/>
+    <skill id="31009" value="31009" name="驱魔术"/>
+    <skill id="31010" value="31010" name="纯洁之光"/>
+    <skill id="31011" value="31011" name="沈静"/>
+    <skill id="31012" value="31012" name="圣水术"/>
+    <skill id="31013" value="31013" name="朦胧术"/>
+    <skill id="31014" value="31014" name="群体治疗"/>
+    <skill id="31101" value="31101" name="医疗术"/>
+    <skill id="31102" value="31102" name="自然医疗"/>
+    <skill id="31103" value="31103" name="神圣之击"/>
+    <skill id="31104" value="31104" name="祈祷Ⅱ"/>
+    <skill id="31105" value="31105" name="识别"/>
+    <skill id="31106" value="31106" name="大地之盾"/>
+    <skill id="31107" value="31107" name="复活术"/>
+    <skill id="31108" value="31108" name="神圣之盾"/>
+    <skill id="31109" value="31109" name="迅捷"/>
+    <skill id="31110" value="31110" name="解除反魔"/>
+    <skill id="31111" value="31111" name="沈静"/>
+    <skill id="31112" value="31112" name="双倍医疗"/>
+    <skill id="31113" value="31113" name="海洋意识"/>
+    <skill id="31114" value="31114" name="烈焰意识"/>
+    <skill id="31115" value="31115" name="朦胧术"/>
+    <skill id="31116" value="31116" name="圣言术"/>
+  </skills>
+
+  <skill_sets>
+    <!-- Level-1 starter sets: 8 attribute rows plus 3 profession skills. -->
+    <skill_set id="level1_warrior" description="1级战士：属性资料0x0001-0x0008 + 10001-10003">
+      <entry skill_id="0x0001"/>
+      <entry skill_id="0x0002"/>
+      <entry skill_id="0x0003"/>
+      <entry skill_id="0x0004"/>
+      <entry skill_id="0x0005"/>
+      <entry skill_id="0x0006"/>
+      <entry skill_id="0x0007"/>
+      <entry skill_id="0x0008"/>
+      <entry skill_id="10001"/>
+      <entry skill_id="10002"/>
+      <entry skill_id="10003"/>
+    </skill_set>
+
+    <skill_set id="level1_mage" description="1级法师：属性资料0x0001-0x0008 + 20001-20003">
+      <entry skill_id="0x0001"/>
+      <entry skill_id="0x0002"/>
+      <entry skill_id="0x0003"/>
+      <entry skill_id="0x0004"/>
+      <entry skill_id="0x0005"/>
+      <entry skill_id="0x0006"/>
+      <entry skill_id="0x0007"/>
+      <entry skill_id="0x0008"/>
+      <entry skill_id="20001"/>
+      <entry skill_id="20002"/>
+      <entry skill_id="20003"/>
+    </skill_set>
+
+    <skill_set id="level1_cleric" description="1级牧师：属性资料0x0001-0x0008 + 30001-30003">
+      <entry skill_id="0x0001"/>
+      <entry skill_id="0x0002"/>
+      <entry skill_id="0x0003"/>
+      <entry skill_id="0x0004"/>
+      <entry skill_id="0x0005"/>
+      <entry skill_id="0x0006"/>
+      <entry skill_id="0x0007"/>
+      <entry skill_id="0x0008"/>
+      <entry skill_id="30001"/>
+      <entry skill_id="30002"/>
+      <entry skill_id="30003"/>
+    </skill_set>
+
+    <!-- Default: warrior basic 11 skills from <skillname>. -->
+    <skill_set id="warrior_basic_11" description="战士基础 11 个技能：10001-10011">
+      <entry skill_id="10001" current_level="1"/>
+      <entry skill_id="10002" current_level="1"/>
+      <entry skill_id="10003" current_level="1"/>
+      <entry skill_id="10004" current_level="1"/>
+      <entry skill_id="10005" current_level="1"/>
+      <entry skill_id="10006" current_level="1"/>
+      <entry skill_id="10007" current_level="1"/>
+      <entry skill_id="10008" current_level="1"/>
+      <entry skill_id="10009" current_level="1"/>
+      <entry skill_id="10010" current_level="1"/>
+      <entry skill_id="10011" current_level="1"/>
+    </skill_set>
+
+    <skill_set id="mage_basic_11" description="法师基础 11 个技能：20001-20011">
+      <entry skill_id="20001" current_level="1"/>
+      <entry skill_id="20002" current_level="1"/>
+      <entry skill_id="20003" current_level="1"/>
+      <entry skill_id="20004" current_level="1"/>
+      <entry skill_id="20005" current_level="1"/>
+      <entry skill_id="20006" current_level="1"/>
+      <entry skill_id="20007" current_level="1"/>
+      <entry skill_id="20008" current_level="1"/>
+      <entry skill_id="20009" current_level="1"/>
+      <entry skill_id="20010" current_level="1"/>
+      <entry skill_id="20011" current_level="1"/>
+    </skill_set>
+
+    <skill_set id="cleric_basic_12" description="牧师基础 12 个技能：30001-30012">
+      <entry skill_id="30001" current_level="1"/>
+      <entry skill_id="30002" current_level="1"/>
+      <entry skill_id="30003" current_level="1"/>
+      <entry skill_id="30004" current_level="1"/>
+      <entry skill_id="30005" current_level="1"/>
+      <entry skill_id="30006" current_level="1"/>
+      <entry skill_id="30007" current_level="1"/>
+      <entry skill_id="30008" current_level="1"/>
+      <entry skill_id="30009" current_level="1"/>
+      <entry skill_id="30010" current_level="1"/>
+      <entry skill_id="30011" current_level="1"/>
+      <entry skill_id="30012" current_level="1"/>
+    </skill_set>
+
+
+  </skill_sets>
+</kok2_skill_table>
